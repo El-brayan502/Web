@@ -1,43 +1,366 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Página GitHub</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-      color: #333;
-      text-align: center;
-      padding: 50px;
-    }
-    h1 {
-      color: #fff;
-      font-size: 3rem;
-      text-shadow: 2px 2px #00000050;
-    }
-    p {
-      font-size: 1.2rem;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      background-color: #ff6f61;
-      color: white;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background-color: #ff3b2e;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neji API</title>
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/El-brayan502/dat1/main/uploads/cdea82-1767811048488.jpg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --deline-bg: #0d121c; 
+            --deline-card: rgba(18, 26, 40, 0.6); 
+            --deline-accent: #3498db; 
+            --deline-body-text: #aabac9; 
+        }
+
+        body {
+            background-color: var(--deline-bg);
+            color: var(--deline-body-text);
+            font-family: 'Outfit', sans-serif;
+            margin: 0; min-height: 100vh;
+        }
+
+        /* Sidebar & Overlay */
+        #sidebar {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background: #0f172a; z-index: 100;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        #sidebar.active { left: 0; }
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 90; display: none;
+        }
+        #overlay.active { display: block; }
+
+        .sidebar-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 20px; color: #cbd5e1; border-radius: 8px; margin: 4px 12px; cursor: pointer;
+        }
+        .sidebar-link:hover { background: rgba(52, 152, 219, 0.1); color: var(--deline-accent); }
+
+        /* Support Screen */
+        #support-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--deline-bg); z-index: 150; display: none;
+            flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        #support-screen.active { display: flex; }
+
+        .top-nav {
+            background: rgba(18, 26, 40, 0.4); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px 0; position: sticky; top: 0; z-index: 50;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #4da4e0, #73c8f8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;
+        }
+
+        .mid-image-container {
+            border-radius: 12px; padding: 1rem; background: rgba(18, 26, 40, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; max-width: 450px;
+        }
+        .mid-image { width: 100%; height: auto; border-radius: 8px; object-fit: cover; }
+
+        .stat-card {
+            background: var(--deline-card); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px; padding: 1.2rem 0.5rem;
+        }
+
+        .category-item { background: #121a28; border: 1px solid #283345; border-radius: 10px; margin-bottom: 1rem; }
+
+        .input-field {
+            background-color: #1a2230; border: 1px solid #334155; color: #fff;
+            border-radius: 8px; padding: 0.8rem; width: 100%; font-size: 14px; outline: none;
+        }
+        .input-field:focus { border-color: var(--deline-accent); }
+
+        .btn-execute {
+            background: linear-gradient(90deg, #3498db, #5dade2);
+            color: white; font-weight: 700; border-radius: 8px; padding: 0.7rem; flex: 1;
+        }
+
+        .btn-clear {
+            background: #222; color: #aaa; border-radius: 8px; padding: 0 15px;
+        }
+
+        /* --- NUEVOS ESTILOS PARA CURL Y RESPONSE --- */
+        .result-section-label {
+            font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.05em; margin-bottom: 6px; display: block;
+        }
+
+        .custom-code-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+        }
+
+        .curl-content {
+            font-size: 11px; color: #10b981; margin-right: 30px;
+            word-break: break-all; line-height: 1.5;
+        }
+
+        .response-scroll-area {
+            max-height: 280px; overflow-y: auto; font-size: 11px; color: #7fb3d5;
+        }
+
+        /* Estilo de la barra de scroll */
+        .response-scroll-area::-webkit-scrollbar { width: 4px; }
+        .response-scroll-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .copy-btn {
+            position: absolute; right: 12px; top: 12px; color: #64748b;
+            cursor: pointer; transition: 0.2s;
+        }
+        .copy-btn:hover { color: #fff; }
+
+        /* --- FIN NUEVOS ESTILOS --- */
+
+        .arrow-rotate { transition: transform 0.3s ease; }
+        .active .arrow-rotate { transform: rotate(180deg); }
+
+        .loader { border: 2px solid var(--deline-accent); border-top: 2px solid transparent; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        img.res-media { max-width: 100%; border-radius: 8px; border: 1px solid #333; }
+    </style>
 </head>
 <body>
-  <h1>¡Bienvenido a mi página! 🌐</h1>
-  <p>Esta es mi primera web en GitHub Pages.</p>
-  <button onclick="alert('¡Hola desde tu web!')">Haz clic aquí</button>
+
+    <div id="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar">
+        <div class="p-6 border-b border-white/5">
+            <h2 class="text-xl font-bold text-white">Menu <span class="text-blue-400">Neji</span></h2>
+        </div>
+        <nav class="mt-4">
+            <a href="https://whatsapp.com/channel/TU_CANAL" target="_blank" class="sidebar-link">
+                <i class="ri-whatsapp-line text-green-500 text-xl"></i>
+                <span class="font-semibold text-sm">Canal de WhatsApp</span>
+            </a>
+            <a href="https://github.com/El-brayan502" target="_blank" class="sidebar-link">
+                <i class="ri-github-fill text-white text-xl"></i>
+                <span class="font-semibold text-sm">Github Owner</span>
+            </a>
+            <div class="mt-6 px-6"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Support</p></div>
+            <div onclick="openSupport()" class="sidebar-link">
+                <i class="ri-customer-service-2-line text-blue-400 text-xl"></i>
+                <span class="font-semibold text-sm">Contact Support</span>
+            </div>
+        </nav>
+    </div>
+
+    <div id="support-screen">
+        <div class="max-w-md w-full bg-[#121a28] p-8 rounded-2xl border border-white/10 shadow-2xl relative">
+            <button onclick="closeSupport()" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl"><i class="ri-close-line"></i></button>
+            <div class="text-center mb-8">
+                <i class="ri-customer-service-2-line text-5xl text-blue-400 mb-2"></i>
+                <h2 class="text-2xl font-bold text-white">Contact <span class="text-blue-400">Support</span></h2>
+            </div>
+            <form action="https://formsubmit.co/brayanfree881@gmail.com" method="POST" class="space-y-4">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="email" name="email" placeholder="Tu correo electrónico" class="input-field" required>
+                <textarea name="message" rows="4" placeholder="Ingrese la nota" class="input-field resize-none" required></textarea>
+                <button type="submit" class="btn-execute">ENVIAR MENSAJE</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="top-nav px-4">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <i class="ri-menu-line text-gray-500 text-2xl cursor-pointer hover:text-white" onclick="toggleSidebar()"></i>
+            <i class="ri-notification-3-line text-2xl text-red-500"></i>
+        </div>
+    </div>
+
+    <div class="max-w-2xl mx-auto p-4 md:p-10">
+        <header class="text-center mb-10">
+            <p class="text-4xl font-extrabold text-white mb-2 tracking-tight">Deline <span class="gradient-text">APIs</span></p>
+            <p class="text-sm text-blue-400 font-bold mb-4">v1.0.2</p>
+        </header>
+
+        <div class="flex justify-center mb-10">
+            <div class="mid-image-container">
+                <img src="https://raw.githubusercontent.com/El-brayan502/dat3/main/uploads/f827f0-1768161650214.jpg" class="mid-image">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-10 text-center">
+            <div class="stat-card">
+                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Battery</p>
+                <span id="battery-level" class="text-xl font-bold text-white">--%</span>
+            </div>
+            <div class="stat-card">
+                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Endpoints</p>
+                <span id="total-endpoints" class="text-xl font-bold text-white">0</span>
+            </div>
+            <div class="stat-card">
+                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Status</p>
+                <span class="text-xl font-bold text-green-500">Online</span>
+            </div>
+        </div>
+
+        <div id="apiList" class="space-y-4">
+            <div class="flex justify-center py-20"><div class="loader"></div></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.origin;
+        let apiData = null;
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+        function openSupport() { toggleSidebar(); document.getElementById('support-screen').classList.add('active'); }
+        function closeSupport() { document.getElementById('support-screen').classList.remove('active'); }
+
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(battery => {
+                const update = () => document.getElementById('battery-level').innerText = Math.round(battery.level * 100) + '%';
+                update(); battery.onlevelchange = update;
+            });
+        }
+
+        async function init() {
+            try {
+                const res = await fetch('src/apis.json');
+                apiData = await res.json();
+                document.getElementById('total-endpoints').innerText = apiData.categories.reduce((a, b) => a + (b.items ? b.items.length : 0), 0);
+                renderApis();
+            } catch (e) {
+                document.getElementById('apiList').innerHTML = `<p class="text-center text-red-500">Error cargando APIs.</p>`;
+            }
+        }
+
+        function renderApis() {
+            const container = document.getElementById('apiList');
+            container.innerHTML = apiData.categories.map((cat, cIdx) => `
+                <div class="category-item overflow-hidden">
+                    <button onclick="toggle('cat-${cIdx}', this)" class="w-full p-5 flex items-center justify-between hover:bg-white/[0.03]">
+                        <div class="flex items-center gap-4">
+                            <i class="ri-folder-fill text-blue-400 text-2xl"></i>
+                            <div class="text-left leading-tight">
+                                <span class="font-bold text-gray-200 text-sm uppercase block">${cat.name}</span>
+                                <span class="text-[10px] text-gray-500 font-medium">${cat.items ? cat.items.length : 0} Metodos</span>
+                            </div>
+                        </div>
+                        <i class="ri-arrow-down-s-line text-gray-500 text-xl arrow-rotate"></i>
+                    </button>
+                    <div id="cat-${cIdx}" class="hidden px-4 pb-4 space-y-3 bg-black/30 border-t border-white/5 pt-4">
+                        ${cat.items ? cat.items.map((item, eIdx) => `
+                            <div class="bg-[#0f141f] rounded-lg border border-[#212c40] overflow-hidden">
+                                <button onclick="toggle('ep-${cIdx}-${eIdx}', this)" class="w-full p-4 flex items-center justify-between hover:bg-white/5">
+                                    <span class="text-xs font-bold text-gray-200">${item.name}</span>
+                                    <i class="ri-settings-4-line text-gray-600"></i>
+                                </button>
+                                <div id="ep-${cIdx}-${eIdx}" class="hidden p-5 space-y-4 border-t border-white/5">
+                                    <form onsubmit="execute(event, ${cIdx}, ${eIdx}, '${item.path}')" class="space-y-4">
+                                        ${Object.keys(item.params).map(p => `
+                                            <div class="space-y-1.5 text-left">
+                                                <label class="text-[10px] text-gray-500 font-bold uppercase">${p} *</label>
+                                                <input type="text" name="${p}" placeholder="${item.params[p]}" class="input-field" required>
+                                            </div>
+                                        `).join('')}
+                                        <div class="flex gap-2">
+                                            <button type="submit" class="btn-execute uppercase">Ejecutar</button>
+                                            <button type="button" onclick="clearRes(${cIdx}, ${eIdx})" class="btn-clear"><i class="ri-refresh-line"></i></button>
+                                        </div>
+                                    </form>
+                                    <div id="loading-${cIdx}-${eIdx}" class="hidden py-4 text-center">
+                                        <div class="loader mx-auto"></div>
+                                    </div>
+                                    
+                                    <div id="res-box-${cIdx}-${eIdx}" class="hidden space-y-4 text-left">
+                                        <div>
+                                            <span class="result-section-label">Curl Command</span>
+                                            <div class="custom-code-box">
+                                                <div class="curl-content" id="curl-text-${cIdx}-${eIdx}"></div>
+                                                <i class="ri-file-copy-line copy-btn" onclick="copyCurl('${cIdx}-${eIdx}')" id="copy-icon-${cIdx}-${eIdx}"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="result-section-label">Response</span>
+                                            <div class="custom-code-box">
+                                                <div class="response-scroll-area" id="res-${cIdx}-${eIdx}"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('') : ''}
+                    </div>
+                </div>`).join('');
+        }
+
+        async function execute(ev, c, e, path) {
+            ev.preventDefault();
+            const form = new FormData(ev.target);
+            const params = new URLSearchParams();
+            form.forEach((v, k) => params.append(k, v));
+            const fullUrl = `${BASE_URL}${path.split('?')[0]}?${params.toString()}`;
+
+            const loading = document.getElementById(`loading-${c}-${e}`);
+            const resBox = document.getElementById(`res-box-${c}-${e}`);
+            const resContent = document.getElementById(`res-${c}-${e}`);
+            const curlText = document.getElementById(`curl-text-${c}-${e}`);
+
+            loading.classList.remove('hidden');
+            resBox.classList.add('hidden');
+            curlText.textContent = `curl -X GET "${fullUrl}"`;
+
+            try {
+                const response = await fetch(fullUrl);
+                const contentType = response.headers.get("content-type");
+
+                if (contentType && contentType.includes("image")) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    resContent.innerHTML = `<img src="${url}" class="res-media mx-auto" alt="Response">`;
+                } 
+                else if (contentType && contentType.includes("video")) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    resContent.innerHTML = `<video src="${url}" controls class="w-full rounded-lg"></video>`;
+                } 
+                else {
+                    const data = await response.json();
+                    resContent.innerHTML = `<pre class="whitespace-pre-wrap">${JSON.stringify(data, null, 2)}</pre>`;
+                }
+
+                loading.classList.add('hidden');
+                resBox.classList.remove('hidden');
+            } catch (err) {
+                loading.classList.add('hidden');
+                resBox.classList.remove('hidden');
+                resContent.innerHTML = `<span class="text-red-500 font-bold">ERROR CONNECTION.</span>`;
+            }
+        }
+
+        function copyCurl(id) {
+            const text = document.getElementById(`curl-text-${id}`).innerText;
+            const icon = document.getElementById(`copy-icon-${id}`);
+            navigator.clipboard.writeText(text).then(() => {
+                icon.className = 'ri-check-line copy-btn text-green-500';
+                setTimeout(() => { icon.className = 'ri-file-copy-line copy-btn'; }, 2000);
+            });
+        }
+
+        function toggle(id, btn) { document.getElementById(id).classList.toggle('hidden'); if(btn.classList.contains('arrow-rotate') || btn.tagName === 'BUTTON') btn.classList.toggle('active'); }
+        function clearRes(c, e) { document.getElementById(`res-box-${c}-${e}`).classList.add('hidden'); }
+        window.onload = init;
+    </script>
 </body>
 </html>
